@@ -13,6 +13,8 @@ type Router interface {
 	Route(w http.ResponseWriter, r *http.Request)
 	// Register registers a http handle func against a path string.
 	Register(path string, f func(w http.ResponseWriter, r *http.Request))
+	// IsRegistered checks if a path is registered
+	IsRegistered(path string) bool
 }
 
 // router implements Router
@@ -35,7 +37,7 @@ func (g *router) Route(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	http.Error(w, "page not found", http.StatusNotFound)
+	http.Error(w, "404 page not found", http.StatusNotFound)
 }
 
 // Register registers a http handle func against a path string.
@@ -44,4 +46,9 @@ func (g *router) Register(path string, f func(w http.ResponseWriter, r *http.Req
 	defer g.mu.Unlock()
 
 	g.registry[filepath.Join("/", strings.ToLower(path))] = f
+}
+
+func (g *router) IsRegistered(path string) bool {
+	_, ok := g.registry[filepath.Join("/", strings.ToLower(path))]
+	return ok
 }
